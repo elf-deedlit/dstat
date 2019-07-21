@@ -32,8 +32,9 @@ import sched
 import six
 import sys
 import time
+import types
 
-VERSION = '0.8.0'
+VERSION = '0.8.0patch1'
 
 theme = { 'default': '' }
 
