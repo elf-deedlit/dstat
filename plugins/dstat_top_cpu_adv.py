@@ -6,10 +6,10 @@
 class dstat_plugin(dstat):
     def __init__(self):
         self.name = 'most expensive cpu process'
-        self.vars = ('process              pid  cpu read write',)
-        self.type = 's'
-        self.width = 40
-        self.scale = 0
+        self.vars = ('process', 'pid', 'cpu', 'read', 'write')
+        self.types = ('s', 's', 'f', 'd', 'd')
+        self.scales = (0, 0, 34, 1024, 1024)
+        self.width = 8
         self.pidset1 = {}
 
     def check(self):
@@ -18,7 +18,6 @@ class dstat_plugin(dstat):
         return True
 
     def extract(self):
-        self.output = ''
         self.pidset2 = {}
         self.val['cpu_usage'] = 0
         for pid in proc_pidlist():
@@ -67,8 +66,10 @@ class dstat_plugin(dstat):
             self.pidset1 = self.pidset2
 
         if self.val['cpu_usage'] != 0.0:
-            self.output = '%-*s%s%-5s%s%s%%%s%s' % (self.width-14-len(pid), self.val['name'][0:self.width-14-len(pid)], color['darkblue'], self.val['pid'], cprint(self.val['cpu_usage'], 'f', 3, 34), color['darkgray'],cprint(self.val['read_usage'], 'd', 5, 1024), cprint(self.val['write_usage'], 'd', 5, 1024))
-
+            self.val['process'] = self.val['name'][:self.width]
+            self.val['cpu'] = self.val['cpu_usage']
+            self.val['read'] = self.val['read_usage']
+            self.val['write'] = self.val['write_usage']
 
     def showcsv(self):
-        return 'Top: %s\t%s\t%s\t%s' % (self.val['name'][0:self.width-20], self.val['cpu_usage'], self.val['read_usage'], self.val['write_usage'])
+        return '%s,%s,%s,%s,%s' % (self.val['name'], self.val['pid'], self.val['cpu_usage'], self.val['read_usage'], self.val['write_usage'])
