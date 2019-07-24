@@ -9,15 +9,14 @@ class dstat_plugin(dstat):
     amount of CPU processing power. Based on per process CPU information.
     """
     def __init__(self):
-        self.name = 'most expensive'
-        self.vars = ('cpu process',)
-        self.type = 's'
-        self.width = 16
-        self.scale = 0
+        self.name = 'most CPU expensive'
+        self.vars = ('process','pid', 'usage')
+        self.types = ('s', 'd', 'f')
+        self.scales = (0, 0, 34)
+        self.width = 8
         self.pidset1 = {}
 
     def extract(self):
-        self.output = ''
         self.pidset2 = {}
         self.val['max'] = 0.0
         for pid in proc_pidlist():
@@ -42,20 +41,16 @@ class dstat_plugin(dstat):
             name = l[1][1:-1]
 
             self.val['max'] = usage
-            self.val['pid'] = pid
+            self.val['pid'] = int(pid)
             self.val['name'] = getnamebypid(pid, name)
-#            self.val['name'] = name
 
-        if self.val['max'] != 0.0:
-            self.output = '%-*s%s' % (self.width-3, self.val['name'][0:self.width-3], cprint(self.val['max'], 'f', 3, 34))
-
-        ### Debug (show PID)
-#        self.output = '%*s %-*s' % (5, self.val['pid'], self.width-6, self.val['name'])
+        self.val['process'] = self.val['name'][:self.width]
+        self.val['usage'] = self.val['max']
 
         if step == op.delay:
             self.pidset1 = self.pidset2
 
     def showcsv(self):
-        return '%s / %d%%' % (self.val['name'], self.val['max'])
+        return '%s,%s,%s' % (self.val['name'], self.val['pid'], self.val['max'])
 
 # vim:ts=4:sw=4:et

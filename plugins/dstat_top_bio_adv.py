@@ -6,8 +6,8 @@
 class dstat_plugin(dstat):
     def __init__(self):
         self.name = 'most expensive block i/o process'
-        self.vars = ('process', 'pid', 'read', 'write', 'cpu',)
-        self.types = ('s', 's', 'f', 'd', 'd')
+        self.vars = ('process', 'pid', 'cpu', 'read', 'write',)
+        self.types = ('s', 'd', 'f', 'd', 'd')
         self.scales = (0, 0, 34, 1024, 1024)
         self.width = 8
         self.pidset1 = {}
@@ -60,18 +60,17 @@ class dstat_plugin(dstat):
                 self.val['usage'] = usage
                 self.val['read_usage'] = read_usage
                 self.val['write_usage'] = write_usage
-                self.val['pid'] = pid
+                self.val['pid'] = int(pid)
                 self.val['name'] = getnamebypid(pid, name)
                 self.val['cpu_usage'] = cpu_usage
 
         if step == op.delay:
             self.pidset1 = self.pidset2
 
-        if self.val['usage'] != 0.0:
-            self.val['process'] = self.val['name'][:self.width]
-            self.val['cpu'] = self.val['cpu_usage']
-            self.val['read'] = self.val['read_usage']
-            self.val['write'] = self.val['write_usage']
+        self.val['process'] = self.val['name'][:self.width]
+        self.val['cpu'] = self.val['cpu_usage']
+        self.val['read'] = self.val['read_usage']
+        self.val['write'] = self.val['write_usage']
 
     def showcsv(self):
-        return '%s,%s,%s,%s,%s' % (self.val['name'], self.val['pid'], self.val['read_usage'], self.val['write_usage'], self.val['cpu_usage'])
+        return '%s,%s,%s,%s,%s' % (self.val['name'], self.val['pid'], self.val['cpu_usage'], self.val['read_usage'], self.val['write_usage'])
