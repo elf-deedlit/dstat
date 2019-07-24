@@ -15,10 +15,10 @@ class dstat_plugin(dstat):
 
     def __init__(self):
         self.name = 'highest total'
-        self.vars = ('latency process',)
-        self.type = 's'
-        self.width = 17
-        self.scale = 0
+        self.vars = ('process', 'pid', 'latency',)
+        self.types = ('s', 'd', 'f',)
+        self.scales = (0, 0, 34,)
+        self.width = 8
         self.pidset1 = {}
 
     def check(self):
@@ -26,7 +26,6 @@ class dstat_plugin(dstat):
             raise Exception('Kernel has no scheduler statistics [CONFIG_SCHEDSTATS], use at least 2.6.12')
 
     def extract(self):
-        self.output = ''
         self.pidset2 = {}
         self.val['result'] = 0
         for pid in proc_pidlist():
@@ -54,19 +53,16 @@ class dstat_plugin(dstat):
             ### Get the process that spends the most jiffies
             if totwait > self.val['result']:
                 self.val['result'] = totwait
-                self.val['pid'] = pid
+                self.val['pid'] = int(pid)
                 self.val['name'] = getnamebypid(pid, name)
 
         if step == op.delay:
             self.pidset1 = self.pidset2
 
-        if self.val['result'] != 0.0:
-            self.output = '%-*s%s' % (self.width-4, self.val['name'][0:self.width-4], cprint(self.val['result'], 'd', 4, 100))
-
-        ### Debug (show PID)
-#       self.output = '%*s %-*s' % (5, self.val['pid'], self.width-6, self.val['name'])
+        self.val['process'] = self.val['name'][:self.width]
+        self.val['latency'] = self.val['result']
 
     def showcsv(self):
-        return '%s / %.4f' % (self.val['name'], self.val['result'])
+        return '%s,%d,%f' % (self.val['name'], self.val['pid'], self.val['result'])
 
 # vim:ts=4:sw=4:et
